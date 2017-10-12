@@ -508,7 +508,15 @@ class GridWorld(SafeMDP):
         plt.imshow(np.reshape(safe_set[:, action], self.world_shape).T,
                    origin='lower', interpolation='nearest', vmin=0, vmax=1)
         plt.title('action {0}'.format(action))
-        plt.show()
+        plt.show(block=False)
+        plt.pause(0.2)
+
+    @staticmethod
+    def plot_close(self):
+        """
+        Closes current open plot.
+        """
+        plt.clf()
 
     def add_observation(self, node, action):
         """
