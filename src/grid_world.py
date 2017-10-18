@@ -492,10 +492,30 @@ class GridWorld(SafeMDP):
         self.compute_S_hat()
         self.compute_expanders()
 
+    def plot_S_iteration(self, safe_set, action=0, title=''):
+        """
+        Plot the set of safe states
+        Does not delete the graph afterwards
+        Parameters
+        ----------
+        safe_set: np.array(dtype=bool)
+            n_states x (n_actions + 1) array of boolean values that indicates
+            the safe set
+        action: int
+            The action for which we want to plot the safe set.
+        title: String
+            the name we want to use
+        """
+        plt.figure(action)
+        plt.imshow(np.reshape(safe_set[:, action], self.world_shape).T,
+                   origin='lower', interpolation='nearest', vmin=0, vmax=1)
+        plt.title(title.format(action))
+        plt.show(block=False)
+        plt.pause(0.2)
+
     def plot_S(self, safe_set, action=0):
         """
         Plot the set of safe states
-
         Parameters
         ----------
         safe_set: np.array(dtype=bool)

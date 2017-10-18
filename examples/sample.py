@@ -73,6 +73,7 @@ for i in range(3):
 x.gp.set_XY(x.gp.X[n_samples:, :], x.gp.Y[n_samples:])
 
 t = time.time()
+x.plot_S_iteration(x.S_hat)
 for i in range(100):
     x.update_sets()
     next_sample = x.target_sample()
@@ -82,7 +83,8 @@ for i in range(100):
     # plt.clf()
     # nx.draw_networkx(x.graph)
     # plt.show()
-    print("Iteration:   " + str(i))
+    x.plot_S_iteration(x.S_hat, 0, 'Safe set for action {0}, iteration: ' + str(i))
+    print("Iteration: " + str(i))
 
 print(str(time.time() - t) + "seconds elapsed")
 
