@@ -11,9 +11,11 @@ These classes provide the main functionality for the safe exploration
    :toctree:
 
    SafeMDP
+   SafeMDPTU
    link_graph_and_safe_set
    reachable_set
    returnable_set
+
 
 Grid world
 ----------
@@ -25,6 +27,7 @@ Some additional functionality specific to gridworlds.
    :toctree:
 
    GridWorld
+   GridWorldTU
    states_to_nodes
    nodes_to_states
    draw_gp_sample

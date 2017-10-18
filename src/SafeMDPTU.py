@@ -4,15 +4,15 @@ import numpy as np
 
 from src.utilities import max_out_degree
 
-#__all__ = ['SafeMDP', 'link_graph_and_safe_set', 'reachable_set','returnable_set']
+#__all__ = ['SafeMDPTU', 'link_graph_and_safe_set', 'reachable_set','returnable_set']
 
 
-class SafeMDP(object):
-    """Base class for safe exploration in MDPs.
+class SafeMDPTU(object):
+    """Base class for safe exploration in MDPs, but with transitional uncertainty added.
 
     This class only provides basic options to compute the safely reachable
     and returnable sets. The actual update of the safety feature must be done
-    in a class that inherits from `SafeMDP`. See `src.grid_world` for an
+    in a class that inherits from `SafeMDPTU`. See `src.grid_world` for an
     example.
 
     Parameters
@@ -34,7 +34,7 @@ class SafeMDP(object):
         The confidence interval used by the GP model.
     """
     def __init__(self, graph, gp, S_hat0, h, L, beta=2):
-        super(SafeMDP, self).__init__()
+        super(SafeMDPTU, self).__init__()
         # Scalar for gp confidence intervals
         self.beta = beta
 
