@@ -5,12 +5,9 @@ import time
 import GPy
 import matplotlib.pyplot as plt
 import numpy as np
+import examples.sampleConstants as constants
 
 from src.grid_world import (compute_true_safe_set, compute_S_hat0, compute_true_S_hat, draw_gp_sample, GridWorld)
-
-# Define world
-world_shape = (20, 20)
-step_size = (0.5, 0.5)
 
 # Define GP
 noise = 0.001
@@ -20,28 +17,19 @@ lik = GPy.likelihoods.Gaussian(variance=noise ** 2)
 lik.constrain_bounded(1e-6, 10000.)
 
 # Sample and plot world
-altitudes, coord = draw_gp_sample(kernel, world_shape, step_size)
+altitudes, coord = draw_gp_sample(kernel, constants.world_shape, constants.step_size)
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.plot_trisurf(coord[:, 0], coord[:, 1], altitudes)
 plt.show(block=False)
 
 # Define coordinates
-n, m = world_shape
-step1, step2 = step_size
+n, m = constants.world_shape
+step1, step2 = constants.step_size
 xx, yy = np.meshgrid(np.linspace(0, (n - 1) * step1, n),
                      np.linspace(0, (m - 1) * step2, m),
                      indexing="ij")
 coord = np.vstack((xx.flatten(), yy.flatten())).T
-
-# Safety threhsold
-h = -0.25
-
-# Lipschitz
-L = 0
-
-# Scaling factor for confidence interval
-beta = 2
 
 # Data to initialize GP
 n_samples = 1
@@ -52,14 +40,14 @@ Y = altitudes[ind].reshape(n_samples, 1) + np.random.randn(n_samples,
 gp = GPy.core.GP(X, Y, kernel, lik)
 
 # Initialize safe sets
-S0 = np.zeros((np.prod(world_shape), 5), dtype=bool)
+S0 = np.zeros((np.prod(constants.world_shape), 5), dtype=bool)
 S0[:, 0] = True
-S_hat0 = compute_S_hat0(np.nan, world_shape, 4, altitudes,
-                        step_size, h)
+S_hat0 = compute_S_hat0(np.nan, constants.world_shape, 4, altitudes,
+                        constants.step_size, constants.h)
 
 # Define SafeMDP object
-x = GridWorld(gp, world_shape, step_size, beta, altitudes, h, S0, S_hat0,
-              L)
+x = GridWorld(gp, constants.world_shape, constants.step_size, constants.beta, altitudes, constants.h, S0, S_hat0,
+              constants.L)
 
 # Insert samples from (s, a) in S_hat0
 tmp = np.arange(x.coord.shape[0])
