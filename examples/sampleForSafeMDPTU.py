@@ -5,6 +5,10 @@ import time
 import GPy
 import matplotlib.pyplot as plt
 import numpy as np
+import sys
+print(sys.path)
+sys.path.append("../home/safe-POMDP/examples")
+#import sampleConstants.py as constant
 
 from src.grid_worldTU import (compute_true_safe_set, compute_S_hat0, compute_true_S_hat, draw_gp_sample, GridWorldTU)
 
