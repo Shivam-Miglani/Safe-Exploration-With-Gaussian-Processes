@@ -2,6 +2,10 @@ from __future__ import division, print_function, absolute_import
 
 import time
 
+import matplotlib
+import matplotlib
+matplotlib.use('TKAgg')
+
 import GPy
 import matplotlib.pyplot as plt
 import numpy as np
