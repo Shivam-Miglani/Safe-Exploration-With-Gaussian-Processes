@@ -5,7 +5,7 @@ import time
 import GPy
 import matplotlib.pyplot as plt
 import numpy as np
-import examples.sampleConstants.py as constants
+import examples.sampleConstants as constants
 
 from src.grid_worldTU import (compute_true_safe_set, compute_S_hat0, compute_true_S_hat, draw_gp_sample, GridWorldTU)
 
