@@ -1,5 +1,3 @@
-#from __future__ import division, print_function, absolute_import
-
 import networkx as nx
 import numpy as np
 from matplotlib import pyplot as plt
@@ -7,12 +5,6 @@ from scipy.spatial.distance import cdist
 
 from src.utilities import DifferenceKernel
 from src.SafeMDPTU import (reachable_set, returnable_set, SafeMDPTU, link_graph_and_safe_set)
-
-
-# __all__ = ['compute_true_safe_set', 'compute_true_S_hat', 'compute_S_hat0',
-#            'grid_world_graph', 'grid', 'GridWorldTU', 'draw_gp_sample',
-#            'states_to_nodes', 'nodes_to_states', 'shortest_path',
-#            'path_to_boolean_matrix', 'safe_subpath']
 
 
 def compute_true_safe_set(world_shape, altitude, h):

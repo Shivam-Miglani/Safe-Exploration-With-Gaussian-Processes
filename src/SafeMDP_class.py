@@ -4,8 +4,6 @@ import numpy as np
 
 from src.utilities import max_out_degree
 
-#__all__ = ['SafeMDP', 'link_graph_and_safe_set', 'reachable_set','returnable_set']
-
 
 class SafeMDP(object):
     """Base class for safe exploration in MDPs.
@@ -67,18 +65,14 @@ class SafeMDP(object):
         reachable_set(self.graph, self.initial_nodes, out=self.reach)
 
         self.S_hat[:] = False
-        returnable_set(self.graph, self.graph_reverse, self.initial_nodes,
-                       out=self.S_hat)
+        returnable_set(self.graph, self.graph_reverse, self.initial_nodes, out=self.S_hat)
 
         self.S_hat &= self.reach
 
     def add_gp_observations(self, x_new, y_new):
         """Add observations to the gp mode."""
         # Update GP with observations
-        self.gp.set_XY(np.vstack((self.gp.X,
-                                  x_new)),
-                       np.vstack((self.gp.Y,
-                                  y_new)))
+        self.gp.set_XY(np.vstack((self.gp.X,x_new)),np.vstack((self.gp.Y,y_new)))
 
 
 def link_graph_and_safe_set(graph, safe_set):
@@ -125,9 +119,7 @@ def reachable_set(graph, initial_nodes, out=None):
         raise AttributeError('Set of initial nodes needs to be non-empty.')
 
     if out is None:
-        visited = np.zeros((graph.number_of_nodes(),
-                            max_out_degree(graph) + 1),
-                           dtype=np.bool)
+        visited = np.zeros((graph.number_of_nodes(), max_out_degree(graph) + 1), dtype=np.bool)
     else:
         visited = out
 
@@ -183,9 +175,7 @@ def returnable_set(graph, reverse_graph, initial_nodes, out=None):
         raise AttributeError('Set of initial nodes needs to be non-empty.')
 
     if out is None:
-        visited = np.zeros((graph.number_of_nodes(),
-                            max_out_degree(graph) + 1),
-                           dtype=np.bool)
+        visited = np.zeros((graph.number_of_nodes(), max_out_degree(graph) + 1), dtype=np.bool)
     else:
         visited = out
 

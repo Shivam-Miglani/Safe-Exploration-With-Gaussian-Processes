@@ -1,5 +1,3 @@
-#from __future__ import division, print_function, absolute_import
-
 import networkx as nx
 import numpy as np
 from matplotlib import pyplot as plt
@@ -7,12 +5,6 @@ from scipy.spatial.distance import cdist
 
 from src.utilities import DifferenceKernel
 from src.SafeMDP_class import (reachable_set, returnable_set, SafeMDP,link_graph_and_safe_set)
-
-
-# __all__ = ['compute_true_safe_set', 'compute_true_S_hat', 'compute_S_hat0',
-#            'grid_world_graph', 'grid', 'GridWorld', 'draw_gp_sample',
-#            'states_to_nodes', 'nodes_to_states', 'shortest_path',
-#            'path_to_boolean_matrix', 'safe_subpath']
 
 
 def compute_true_safe_set(world_shape, altitude, h):
@@ -211,24 +203,16 @@ def grid_world_graph(world_size):
     graph = nx.DiGraph()
 
     # action 1: go right
-    graph.add_edges_from(zip(grid_nodes[:, :-1].reshape(-1),
-                             grid_nodes[:, 1:].reshape(-1)),
-                         action=1)
+    graph.add_edges_from(zip(grid_nodes[:, :-1].reshape(-1),grid_nodes[:, 1:].reshape(-1)),action=1)
 
     # action 2: go down
-    graph.add_edges_from(zip(grid_nodes[:-1, :].reshape(-1),
-                             grid_nodes[1:, :].reshape(-1)),
-                         action=2)
+    graph.add_edges_from(zip(grid_nodes[:-1, :].reshape(-1),grid_nodes[1:, :].reshape(-1)),action=2)
 
     # action 3: go left
-    graph.add_edges_from(zip(grid_nodes[:, 1:].reshape(-1),
-                             grid_nodes[:, :-1].reshape(-1)),
-                         action=3)
+    graph.add_edges_from(zip(grid_nodes[:, 1:].reshape(-1),grid_nodes[:, :-1].reshape(-1)),action=3)
 
     # action 4: go up
-    graph.add_edges_from(zip(grid_nodes[1:, :].reshape(-1),
-                             grid_nodes[:-1, :].reshape(-1)),
-                         action=4)
+    graph.add_edges_from(zip(grid_nodes[1:, :].reshape(-1),grid_nodes[:-1, :].reshape(-1)),action=4)
 
     return graph
 
@@ -477,9 +461,7 @@ class GridWorld(SafeMDP):
             distance = self.distance_matrix[np.ix_(s_hat, ~self.S[:, action])]
 
             # Update expanders for this particular action
-            self.G[s_hat, action] = np.any(
-                self.u[s_hat, action, None] - self.L * distance >= self.h,
-                axis=1)
+            self.G[s_hat, action] = np.any(self.u[s_hat, action, None] - self.L * distance >= self.h, axis=1)
 
     def update_sets(self):
         """
@@ -549,13 +531,11 @@ class GridWorld(SafeMDP):
             if data['action'] == action:
                 break
 
-        self.add_gp_observations(self.coord[[node, next_node], :],
-                                 self.altitudes[[node, next_node], None])
+        self.add_gp_observations(self.coord[[node, next_node], :],self.altitudes[[node, next_node], None])
 
     def target_sample(self):
         """
-        Compute the next target (s, a) to sample (highest uncertainty within
-        G or S_hat)
+        Compute the next target (s, a) to sample (highest uncertainty within G or S_hat)
 
         Returns
         -------
@@ -575,8 +555,7 @@ class GridWorld(SafeMDP):
             max_id = np.argmax(w)
 
         else:
-            print('No expanders, using most uncertain element in S_hat'
-                  'instead.')
+            print('No expanders, using most uncertain element in S_hat instead.')
 
             # Extract elements in S_hat
             expander_id = np.nonzero(self.S_hat)
@@ -631,8 +610,7 @@ def nodes_to_states(nodes, world_shape, step_size):
     """
     nodes = np.asanyarray(nodes)
     step_size = np.asanyarray(step_size)
-    return np.vstack((nodes // world_shape[1],
-                      nodes % world_shape[1])).T * step_size
+    return np.vstack((nodes // world_shape[1],nodes % world_shape[1])).T * step_size
 
 
 def grid(world_shape, step_size):

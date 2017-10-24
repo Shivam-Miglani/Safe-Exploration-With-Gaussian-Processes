@@ -2,7 +2,7 @@ from __future__ import division, print_function, absolute_import
 
 import time
 
-import matplotlib
+
 import matplotlib
 matplotlib.use('TKAgg')
 
@@ -15,8 +15,7 @@ from src.grid_worldTU import (compute_true_safe_set, compute_S_hat0, compute_tru
 
 # Define GP
 noise = 0.001
-kernel = GPy.kern.RBF(input_dim=2, lengthscale=(2., 2.), variance=1.,
-                      ARD=True)
+kernel = GPy.kern.RBF(input_dim=2, lengthscale=(2., 2.), variance=1.,ARD=True)
 lik = GPy.likelihoods.Gaussian(variance=noise ** 2)
 lik.constrain_bounded(1e-6, 10000.)
 
@@ -30,17 +29,14 @@ plt.show(block=False)
 # Define coordinates
 n, m = constants.world_shape
 step1, step2 = constants.step_size
-xx, yy = np.meshgrid(np.linspace(0, (n - 1) * step1, n),
-                     np.linspace(0, (m - 1) * step2, m),
-                     indexing="ij")
+xx, yy = np.meshgrid(np.linspace(0, (n - 1) * step1, n),np.linspace(0, (m - 1) * step2, m),indexing="ij")
 coord = np.vstack((xx.flatten(), yy.flatten())).T
 
 # Data to initialize GP
 n_samples = 1
 ind = np.random.choice(range(altitudes.size), n_samples)
 X = coord[ind, :]
-Y = altitudes[ind].reshape(n_samples, 1) + np.random.randn(n_samples,
-                                                           1)
+Y = altitudes[ind].reshape(n_samples, 1) + np.random.randn(n_samples,1)
 gp = GPy.core.GP(X, Y, kernel, lik)
 
 # Initialize safe sets
