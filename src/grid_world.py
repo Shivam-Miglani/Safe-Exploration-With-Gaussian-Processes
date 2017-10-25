@@ -677,6 +677,11 @@ def draw_gp_sample(kernel, world_shape, step_size):
     # Draw a sample from GP
     cov = kernel.K(coord)*0  # + np.eye(coord.shape[0]) * 1e-10
     sample = np.random.multivariate_normal(np.zeros(coord.shape[0]), cov)
+    offset = 20
+    for x in range (8,18):
+        for y in range (8,18):
+            sample[x + y * offset] = 3
+    print(str(sample.size))
     return sample, coord
 
 
