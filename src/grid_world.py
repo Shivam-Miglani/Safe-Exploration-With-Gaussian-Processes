@@ -677,11 +677,31 @@ def draw_gp_sample(kernel, world_shape, step_size):
     # Draw a sample from GP
     cov = kernel.K(coord)*0  # + np.eye(coord.shape[0]) * 1e-10
     sample = np.random.multivariate_normal(np.zeros(coord.shape[0]), cov)
+
+    # Change ndarray to another world
     offset = 20
-    for x in range (8,18):
-        for y in range (8,18):
-            sample[x + y * offset] = 3
-    print(str(sample.size))
+    xstart = 2
+    for x in range (xstart,16):
+        for y in range (0,8):
+            sample[x + y * offset] = np.exp(0.1*(x-xstart)) - 1
+
+    # Smooth
+    # x-axis
+    for x in range (xstart, 17):
+        sample[x + 8 * offset] = 0.5 * (np.exp(0.1*(x-xstart)) - 1)
+    # y-axis
+    for y in range (0, 8):
+        sample[16+ y * offset] = 0.5 * (np.exp(0.1*(16-xstart)) - 1)
+
+
+    # Subtract average value so that average value is close to zero
+    avg = np.average(sample)
+    for x in range (0, 20):
+        for y in range (0, 20):
+            sample[x + y * offset] = sample[x + y * offset] - avg
+    newAvg = np.average(sample)
+    print(str(sample))
+    print('avg before: {0}, avg after: {1}'.format(str(avg), str(newAvg)))
     return sample, coord
 
 
