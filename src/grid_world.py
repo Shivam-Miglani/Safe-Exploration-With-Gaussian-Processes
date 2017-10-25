@@ -675,7 +675,7 @@ def draw_gp_sample(kernel, world_shape, step_size):
     coord = grid(world_shape, step_size)
 
     # Draw a sample from GP
-    cov = kernel.K(coord) + np.eye(coord.shape[0]) * 1e-10
+    cov = kernel.K(coord)*0  # + np.eye(coord.shape[0]) * 1e-10
     sample = np.random.multivariate_normal(np.zeros(coord.shape[0]), cov)
     return sample, coord
 
