@@ -681,17 +681,23 @@ def draw_gp_sample(kernel, world_shape, step_size):
     # Change ndarray to another world
     offset = 20
     xstart = 2
-    for x in range (xstart,16):
+    scaling = 0.3
+    for x in range (xstart,14):
         for y in range (0,8):
-            sample[x + y * offset] = np.exp(0.1*(x-xstart)) - 1
+            sample[x + y * offset] = np.exp(scaling*(x-xstart)) - 1
 
     # Smooth
     # x-axis
-    for x in range (xstart, 17):
-        sample[x + 8 * offset] = 0.5 * (np.exp(0.1*(x-xstart)) - 1)
+    for x in range (xstart, 15):
+        sample[x + 8 * offset] = 0.66 * (np.exp(scaling*(x-xstart)) - 1)
+    for x in range (xstart, 15):
+        sample[x + 9 * offset] = 0.33 * (np.exp(scaling*(x-xstart-1)) - 1)
+    sample[15 + 9 * offset]  = 0.33 * (np.exp(scaling*(13-xstart)) - 1)
     # y-axis
     for y in range (0, 8):
-        sample[16+ y * offset] = 0.5 * (np.exp(0.1*(16-xstart)) - 1)
+        sample[14 + y * offset] = 0.66 * (np.exp(scaling*(14-xstart)) - 1)
+    for y in range (0, 9):
+        sample[15 + y * offset] = 0.33 * (np.exp(scaling*(15-xstart)) - 1)
 
 
     # Subtract average value so that average value is close to zero
