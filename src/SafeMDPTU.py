@@ -104,7 +104,9 @@ def reachable_set(graph, initial_nodes, out=None):
     ----------
     graph: nx.DiGraph
         Directed graph. Each edge must have associated action metadata,
-        which specifies the action that this edge corresponds to.
+        which specifies the action that this edge corresponds to, and a
+        probability value which corresponds to the chance of that edge
+        being followed given that action.
         Each edge has an attribute ['safe'], which is a boolean that
         indicates safety
     initial_nodes: list
@@ -139,10 +141,18 @@ def reachable_set(graph, initial_nodes, out=None):
     # TODO: rather than checking if things are safe, specify a safe subgraph?
     while stack:
         node = stack.pop(0)
-        # iterate over edges going away from node
+        scary_actions = list()
+        # examine all edges from node, see which actions are unsafe
         for _, next_node, data in graph.edges_iter(node, data=True):
             action = data['action']
-            if not visited[node, action] and data['safe']:
+            probability = data['probability']
+            safe = data['safe']
+            if not safe and probability:
+                scary_actions.append(action)
+        for _, next_node, data in graph.edges_iter(node, data=True):
+            action = data['action']
+            safe = data['safe']
+            if not visited[node, action] and safe and action not in scary_actions:
                 visited[node, action] = True
                 if not visited[next_node, 0]:
                     stack.append(next_node)
@@ -150,7 +160,6 @@ def reachable_set(graph, initial_nodes, out=None):
 
     if out is None:
         return visited
-
 
 def returnable_set(graph, reverse_graph, initial_nodes, out=None):
     """
