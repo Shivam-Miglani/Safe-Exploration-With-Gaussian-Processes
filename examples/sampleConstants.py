@@ -14,4 +14,5 @@ beta = 2
 
 # Define world
 world_shape = (10, 10)
-step_size = (1, 1)
+step_size = (1.0, 1.0)
+num_iterations = 100

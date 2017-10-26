@@ -1,7 +1,7 @@
 from __future__ import division, print_function, absolute_import
 
 import time
-
+import networkx as nx
 
 import matplotlib
 matplotlib.use('TKAgg')
@@ -10,6 +10,7 @@ import GPy
 import matplotlib.pyplot as plt
 import numpy as np
 import examples.sampleConstants as constants
+from collections import defaultdict
 
 from src.grid_worldTU import (compute_true_safe_set, compute_S_hat0, compute_true_S_hat, draw_gp_sample, GridWorldTU)
 
@@ -42,12 +43,10 @@ gp = GPy.core.GP(X, Y, kernel, lik)
 # Initialize safe sets
 S0 = np.zeros((np.prod(constants.world_shape), 5), dtype=bool)
 S0[:, 0] = True
-S_hat0 = compute_S_hat0(np.nan, constants.world_shape, 4, altitudes,
-                        constants.step_size, constants.h)
+S_hat0 = compute_S_hat0(np.nan, constants.world_shape, 4, altitudes, constants.step_size, constants.h)
 
 # Define SafeMDPTU object
-x = GridWorldTU(gp, constants.world_shape, constants.step_size, constants.beta, altitudes, constants.h, S0, S_hat0,
-                constants.L)
+x = GridWorldTU(gp, constants.world_shape, constants.step_size, constants.beta, altitudes, constants.h, S0, S_hat0, constants.L)
 
 # Insert samples from (s, a) in S_hat0
 tmp = np.arange(x.coord.shape[0])
@@ -62,17 +61,39 @@ x.gp.set_XY(x.gp.X[n_samples:, :], x.gp.Y[n_samples:])
 
 t = time.time()
 x.plot_S_iteration(x.S_hat)
-for i in range(100):
+for i in range(constants.num_iterations):
     x.update_sets()
     next_sample = x.target_sample()
     x.add_observation(*next_sample)
-    # x.compute_graph_lazy()
-    # plt.figure(1)
-    # plt.clf()
-    # nx.draw_networkx(x.graph)
-    # plt.show()
     x.plot_S_iteration(x.S_hat, 0, 'Safe set for action {0}, iteration: ' + str(i))
     print("Iteration: " + str(i))
+
+#plotting the graph
+plt.figure(3)
+plt.clf()
+pos = nx.spring_layout(x.graph,k=10)
+
+edge_labels_action = nx.get_edge_attributes(x.graph,'action')
+#print(edge_labels_action)
+edge_labels_safe = nx.get_edge_attributes(x.graph,'safe')
+for key in edge_labels_safe:
+    edge_labels_safe[key] = edge_labels_safe[key].tolist()
+#print(edge_labels_safe)
+
+#combining dictionaries to make a single edge label - Ex. [action, safe, probability]
+edge_labels = defaultdict(list)
+for d in (edge_labels_action, edge_labels_safe):  # you can list as many input dicts as you want here
+    for key, value in d.items():
+        edge_labels[key].append(value)
+
+print(edge_labels)
+
+nx.draw_networkx(x.graph, pos)
+nx.draw_networkx_edge_labels(x.graph, pos, edge_labels, font_size=7)
+
+plt.show(block=False)
+
+
 
 print(str(time.time() - t) + "seconds elapsed")
 
@@ -80,10 +101,10 @@ true_S = compute_true_safe_set(x.world_shape, x.altitudes, x.h)
 true_S_hat = compute_true_S_hat(x.graph, true_S, x.initial_nodes)
 
 # Plot safe sets
-x.plot_S(x.S_hat)
-x.plot_S(true_S_hat)
+x.plot_S(x.S_hat,0,4,'S_hat:   ')
+x.plot_S(true_S_hat,0,5,'true_S_hat:   ')
 
 # Classification performance
-print(np.sum(np.logical_and(true_S_hat, np.logical_not(
-    x.S_hat))))  # in true S_hat and not S_hat
+print(np.sum(np.logical_and(true_S_hat, np.logical_not(x.S_hat))))  # in true S_hat and not S_hat
 print(np.sum(np.logical_and(x.S_hat, np.logical_not(true_S_hat))))
+#input('type q to exit')

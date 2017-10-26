@@ -163,8 +163,7 @@ def compute_S_hat0(s, world_shape, n_actions, altitudes, step_size, h):
     else:
         while np.all(np.logical_not(S_hat)):
             initial_state = np.random.choice(n_states)
-            S_hat = compute_S_hat0(initial_state, world_shape, n_actions,
-                                   altitudes, step_size, h)
+            S_hat = compute_S_hat0(initial_state, world_shape, n_actions, altitudes, step_size, h)
         return S_hat
 
 
@@ -203,7 +202,7 @@ def grid_world_graph(world_size):
     graph = nx.DiGraph()
 
     # action 1: go right
-    graph.add_edges_from(zip(grid_nodes[:, :-1].reshape(-1),
+    graph.add_edges_from(zip(grid_nodes[:, :-1].reshape(-1),  #add edges to all nodes except last node and first node
                              grid_nodes[:, 1:].reshape(-1)),
                          action=1)
 
@@ -298,7 +297,10 @@ class GridWorldTU(SafeMDPTU):
 
         # Safe set
         self.S = S0.copy()
+
         graph = grid_world_graph(world_shape)
+
+
         link_graph_and_safe_set(graph, self.S)
         super(GridWorldTU, self).__init__(graph, gp, S_hat0, h, L, beta=2)
 
@@ -329,10 +331,8 @@ class GridWorldTU(SafeMDPTU):
         self._prev_right = states_grid[:-1, :].flatten()
         self._next_right = states_grid[1:, :].flatten()
 
-        self._mat_up = np.hstack((self.coord[self._prev_up, :],
-                                  self.coord[self._next_up, :]))
-        self._mat_right = np.hstack((self.coord[self._prev_right, :],
-                                     self.coord[self._next_right, :]))
+        self._mat_up = np.hstack((self.coord[self._prev_up, :],self.coord[self._next_up, :]))
+        self._mat_right = np.hstack((self.coord[self._prev_right, :],self.coord[self._next_right, :]))
 
     def update_confidence_interval(self, jacobian=False):
         """
@@ -374,10 +374,8 @@ class GridWorldTU(SafeMDPTU):
                                          self.step_size)
 
             # Extract nodes to be updated
-            nodes1 = list(nx.single_source_shortest_path(self.graph, last_nodes[0],
-                                                    self.update_dist).keys())
-            nodes2 = list(nx.single_source_shortest_path(self.graph, last_nodes[1],
-                                                    self.update_dist).keys())
+            nodes1 = list(nx.single_source_shortest_path(self.graph, last_nodes[0], self.update_dist).keys())
+            nodes2 = list(nx.single_source_shortest_path(self.graph, last_nodes[1], self.update_dist).keys())
 
             update_nodes = np.union1d(nodes1, nodes2)
             subgraph = self.graph.subgraph(update_nodes)
@@ -505,7 +503,7 @@ class GridWorldTU(SafeMDPTU):
         plt.show(block=False)
         plt.pause(0.2)
 
-    def plot_S(self, safe_set, action=0):
+    def plot_S(self, safe_set, action=0, fig=0, desc=''):
         """
         Plot the set of safe states
         Parameters
@@ -516,11 +514,12 @@ class GridWorldTU(SafeMDPTU):
         action: int
             The action for which we want to plot the safe set.
         """
-        plt.figure(action)
-        plt.imshow(np.reshape(safe_set[:, action], self.world_shape).T,
-                   origin='lower', interpolation='nearest', vmin=0, vmax=1)
-        plt.title('action {0}'.format(action))
-        plt.show()
+        plt.figure(fig)
+        plt.clf()
+        plt.imshow(np.reshape(safe_set[:, action], self.world_shape).T, origin='lower', interpolation='nearest', vmin=0, vmax=1)
+        plt.title(desc+'action {0}'.format(action))
+        plt.draw()
+        plt.show(block=False)
 
     def add_observation(self, node, action):
         """

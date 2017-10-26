@@ -66,14 +66,16 @@ class SafeMDPTU(object):
         """Compute the safely reachable set given the current safe_set."""
         self.reach[:] = False
         reachable_set(self.graph, self.initial_nodes, out=self.reach)
-        print("Reachable Set:")
-        print(self.reach)
+        # print("Reachable Set:")
+        # print(self.reach)
         self.S_hat[:] = False
         returnable_set(self.graph, self.graph_reverse, self.initial_nodes, out=self.S_hat)
-        print("Returnable Set:")
-        print(self.S_hat)
+        # print("Returnable Set:")
+        # print(self.S_hat)
 
         self.S_hat &= self.reach
+        print("S_hat:")
+        print(self.S_hat)
 
     def add_gp_observations(self, x_new, y_new):
         """Add observations to the gp mode."""
@@ -183,9 +185,7 @@ def returnable_set(graph, reverse_graph, initial_nodes, out=None):
         raise AttributeError('Set of initial nodes needs to be non-empty.')
 
     if out is None:
-        visited = np.zeros((graph.number_of_nodes(),
-                            max_out_degree(graph) + 1),
-                           dtype=np.bool)
+        visited = np.zeros((graph.number_of_nodes(),max_out_degree(graph) + 1), dtype=np.bool)
     else:
         visited = out
 
@@ -194,9 +194,8 @@ def returnable_set(graph, reverse_graph, initial_nodes, out=None):
 
     stack = list(initial_nodes)
 
-    # TODO: rather than checking if things are safe, specify a safe subgraph?
     while stack:
-        node = stack.pop(0)
+        node = stack.pop(0)  # pop at index 0
         # iterate over edges going into node
         for _, prev_node in reverse_graph.edges_iter(node):
             data = graph.get_edge_data(prev_node, node)
