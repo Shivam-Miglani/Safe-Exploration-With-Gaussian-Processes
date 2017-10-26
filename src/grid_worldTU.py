@@ -213,22 +213,22 @@ def grid_world_graph(world_size):
     # action 1: go right
     graph.add_edges_from(zip(grid_nodes[:, :-1].reshape(-1),
                              grid_nodes[:, 1:].reshape(-1)),
-                         action=1)
+                         action=1, probability = 1.0)
 
     # action 2: go down
     graph.add_edges_from(zip(grid_nodes[:-1, :].reshape(-1),
                              grid_nodes[1:, :].reshape(-1)),
-                         action=2)
+                         action=2, probability = 1.0)
 
     # action 3: go left
     graph.add_edges_from(zip(grid_nodes[:, 1:].reshape(-1),
                              grid_nodes[:, :-1].reshape(-1)),
-                         action=3)
+                         action=3, probability = 1.0)
 
     # action 4: go up
     graph.add_edges_from(zip(grid_nodes[1:, :].reshape(-1),
                              grid_nodes[:-1, :].reshape(-1)),
-                         action=4)
+                         action=4, probability = 1.0)
 
     return graph
 
