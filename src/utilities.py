@@ -41,8 +41,7 @@ class DifferenceKernel(object):
         if x2 is None:
             x10 = x1[:, :dim]
             x11 = x1[:, dim:]
-            return (self.kern.K(x10) + self.kern.K(x11) -
-                    self.kern.K(x10, x11) - self.kern.K(x11, x10))
+            return (self.kern.K(x10) + self.kern.K(x11) - self.kern.K(x10, x11) - self.kern.K(x11, x10))
         else:
             x20 = x2[:, :dim]
             x21 = x2[:, dim:]
@@ -58,8 +57,7 @@ class DifferenceKernel(object):
         dim = self.kern.input_dim
         x0 = x[:, :dim]
         x1 = x[:, dim:]
-        return (self.kern.Kdiag(x0) + self.kern.Kdiag(x1) -
-                2 * np.diag(self.kern.K(x0, x1)))
+        return (self.kern.Kdiag(x0) + self.kern.Kdiag(x1) - 2 * np.diag(self.kern.K(x0, x1)))
 
 
 def max_out_degree(graph):

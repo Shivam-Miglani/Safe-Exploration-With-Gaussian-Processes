@@ -106,7 +106,9 @@ def reachable_set(graph, initial_nodes, out=None):
     ----------
     graph: nx.DiGraph
         Directed graph. Each edge must have associated action metadata,
-        which specifies the action that this edge corresponds to.
+        which specifies the action that this edge corresponds to, and a
+        probability value which corresponds to the chance of that edge
+        being followed given that action.
         Each edge has an attribute ['safe'], which is a boolean that
         indicates safety
     initial_nodes: list
@@ -141,10 +143,18 @@ def reachable_set(graph, initial_nodes, out=None):
     # TODO: rather than checking if things are safe, specify a safe subgraph?
     while stack:
         node = stack.pop(0)
-        # iterate over edges going away from node
+        scary_actions = list()
+        # examine all edges from node, see which actions are unsafe
         for _, next_node, data in graph.edges_iter(node, data=True):
             action = data['action']
-            if not visited[node, action] and data['safe']:
+            probability = data['probability']
+            safe = data['safe']
+            if not safe and probability:
+                scary_actions.append(action)
+        for _, next_node, data in graph.edges_iter(node, data=True):
+            action = data['action']
+            safe = data['safe']
+            if not visited[node, action] and safe and action not in scary_actions:
                 visited[node, action] = True
                 if not visited[next_node, 0]:
                     stack.append(next_node)
@@ -152,7 +162,6 @@ def reachable_set(graph, initial_nodes, out=None):
 
     if out is None:
         return visited
-
 
 def returnable_set(graph, reverse_graph, initial_nodes, out=None):
     """
@@ -189,21 +198,60 @@ def returnable_set(graph, reverse_graph, initial_nodes, out=None):
     else:
         visited = out
 
+    # Get reachable set
+    reachable = reachable_set(graph, initial_nodes)
+
     # All nodes in the initial set are visited
     visited[initial_nodes, 0] = True
 
     stack = list(initial_nodes)
+    popped = list()
 
     while stack:
-        node = stack.pop(0)  # pop at index 0
+        # for each node in the stack of safe nodes
+        node = stack.pop(0)
+        # save node for dead-end check if not in the initial safe set
+        if not node in initial_nodes:
+            popped.append(node)
         # iterate over edges going into node
         for _, prev_node in reverse_graph.edges_iter(node):
             data = graph.get_edge_data(prev_node, node)
-            if not visited[prev_node, data['action']] and data['safe']:
+            semi_safe_action = True
+            # see if that action can also lead to unsafe places
+            for _, other_node in graph.edges_iter(prev_node):
+                other_data = graph.get_edge_data(prev_node, other_node)
+                if other_data['probability'] and \
+                        data['action'] == other_data['action'] and \
+                        (not other_data['safe'] or reachable[other_node, 0]):
+                    safe_action = False
+            # if not yet visited and cannot lead to unsafe places, add to returnable states
+            if not visited[prev_node, data['action']] and semi_safe_action:
                 visited[prev_node, data['action']] = True
                 if not visited[prev_node, 0]:
                     stack.append(prev_node)
                     visited[prev_node, 0] = True
+
+    while popped:
+        # for each node to check for dead-endiness
+        node = popped.pop(0)
+        # see if it leads somewhere
+        leadsSomewhere = False
+        for action in range(1,5):
+            if visited[node, action]:
+                leadsSomewhere = True
+        if not leadsSomewhere:
+            # mark node as non-returnable
+            visited[node, 0] = False
+            # check all nodes leading here
+            for _, prev_node in reverse_graph.edges_iter(node):
+                data = graph.get_edge_data(prev_node, node)
+                # if that action leading here was considered safe
+                if data['probability'] and visited[prev_node, data['action']]:
+                    # consider it unsafe now
+                    visited[prev_node, data['action']] = False
+                    # and check if this previous node might be a dead end, if not defined as safe
+                    if not prev_node in popped and not prev_node in initial_nodes:
+                        popped.append(prev_node)
 
     if out is None:
         return visited
