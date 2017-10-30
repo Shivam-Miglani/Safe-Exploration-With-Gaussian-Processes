@@ -31,6 +31,7 @@ def compute_true_safe_set(world_shape, altitude, h):
 
     # Reshape so that first dimensions are actions, the rest is the grid world.
     safe_grid = true_safe.T.reshape((5,) + world_shape)
+    print(safe_grid)
 
     # Height difference (next height - current height) --> positive if downhill
     up_diff = altitude_grid[:, :-1] - altitude_grid[:, 1:]
@@ -202,9 +203,7 @@ def grid_world_graph(world_size):
     graph = nx.DiGraph()
 
     # action 1: go right
-    graph.add_edges_from(zip(grid_nodes[:, :-1].reshape(-1),  #add edges to all nodes except last node and first node
-                             grid_nodes[:, 1:].reshape(-1)),
-                         action=1)
+    graph.add_edges_from(zip(grid_nodes[:, :-1].reshape(-1), grid_nodes[:, 1:].reshape(-1)), action=1)
 
     # action 2: go down
     graph.add_edges_from(zip(grid_nodes[:-1, :].reshape(-1),

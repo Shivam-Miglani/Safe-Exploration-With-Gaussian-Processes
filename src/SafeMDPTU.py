@@ -129,18 +129,15 @@ def reachable_set(graph, initial_nodes, out=None):
         raise AttributeError('Set of initial nodes needs to be non-empty.')
 
     if out is None:
-        visited = np.zeros((graph.number_of_nodes(),
-                            max_out_degree(graph) + 1),
-                           dtype=np.bool)
+        visited = np.zeros((graph.number_of_nodes(),max_out_degree(graph) + 1),dtype=np.bool)
     else:
-        visited = out
+        visited = out    #out is false everywhere except the initial nodes #point visited to whatever out points to.
 
     # All nodes in the initial set are visited
     visited[initial_nodes, 0] = True
 
     stack = list(initial_nodes)
 
-    # TODO: rather than checking if things are safe, specify a safe subgraph?
     while stack:
         node = stack.pop(0)
         scary_actions = list()
@@ -149,17 +146,18 @@ def reachable_set(graph, initial_nodes, out=None):
             action = data['action']
             probability = data['probability']
             safe = data['safe']
-            if not safe and probability:
+            if not safe and probability:  #if there is a probability of taking unsafe action.
                 scary_actions.append(action)
         for _, next_node, data in graph.edges_iter(node, data=True):
             action = data['action']
             safe = data['safe']
+            #if next_node is unvisited(reached by taking 'action' on 'node') and its safe to do so and the action is not in scary actions
             if not visited[node, action] and safe and action not in scary_actions:
-                visited[node, action] = True
-                if not visited[next_node, 0]:
+                visited[node, action] = True #visit that node
+                if not visited[next_node, 0]: #update entry of next_node in visited array
                     stack.append(next_node)
                     visited[next_node, 0] = True
-
+    #return only if out is not defined, otherwise result is stored in out
     if out is None:
         return visited
 
