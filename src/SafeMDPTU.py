@@ -1,6 +1,8 @@
 #from __future__ import division, print_function, absolute_import
 
 import numpy as np
+import examples.sampleConstants as constants
+from matplotlib import pyplot as plt
 
 from src.utilities import max_out_degree
 
@@ -51,7 +53,7 @@ class SafeMDPTU(object):
         self.graph_reverse = self.graph.reverse()
 
         num_nodes = self.graph.number_of_nodes()
-        num_edges = max_out_degree(graph)
+        num_edges = constants.action_count
         safe_set_size = (num_nodes, num_edges + 1)
 
         self.reach = np.empty(safe_set_size, dtype=np.bool)
@@ -128,13 +130,17 @@ def reachable_set(graph, initial_nodes, out=None):
 
     if out is None:
         visited = np.zeros((graph.number_of_nodes(),
-                            max_out_degree(graph) + 1),
+                            constants.action_count + 1),
                            dtype=np.bool)
     else:
         visited = out
 
     # All nodes in the initial set are visited
     visited[initial_nodes, 0] = True
+
+    # for _, next_node, data in graph.edges_iter(10*20+7, data=True):
+    #     if data['action']==4:
+    #         print(data)
 
     stack = list(initial_nodes)
 
@@ -149,14 +155,50 @@ def reachable_set(graph, initial_nodes, out=None):
             safe = data['safe']
             if not safe and probability:
                 scary_actions.append(action)
+            # if next_node == 6*20+7:
+                # print('corner\'s scary')
+                # print(scary_actions)
+        # if node == 7*20+7:
+            # print('from\'s scary')
+            # print(scary_actions)
         for _, next_node, data in graph.edges_iter(node, data=True):
             action = data['action']
             safe = data['safe']
             if not visited[node, action] and safe and action not in scary_actions:
+                # if next_node == 9 * 20 + 7:
+                #     print('node')
+                #     print(node)
+                #     print('action')
+                #     print(action)
+                #     print('safe')
+                #     print(safe)
+                #     print('all actions')
+                #     for _, next_node, data in graph.edges_iter(node, data=True):
+                #         print(next_node)
+                #         print(visited[next_node, :])
+                #         print(data['action'])
+                #         print(data['probability'])
+                #         print(data['safe'])
+                #         print('.')
+                #     print(visited[node, :])
                 visited[node, action] = True
                 if not visited[next_node, 0]:
                     stack.append(next_node)
                     visited[next_node, 0] = True
+
+    # for action in range(4,5):
+    #     plt.figure(action)
+    #     plt.imshow(np.reshape(visited[:,action], constants.world_shape).T,
+    #                origin='lower', interpolation='nearest', vmin=0, vmax=1)
+    #     plt.title('action <-')
+    #     plt.show(block=False)
+    #     plt.pause(0.01)
+    # plt.figure(6)
+    # plt.imshow(np.reshape(visited[:, 0], constants.world_shape).T,
+    #            origin='lower', interpolation='nearest', vmin=0, vmax=1)
+    # plt.title('reachable')
+    # plt.show(block=False)
+    # plt.pause(0.01)
 
     if out is None:
         return visited
@@ -193,7 +235,7 @@ def returnable_set(graph, reverse_graph, initial_nodes, out=None):
 
     if out is None:
         visited = np.zeros((graph.number_of_nodes(),
-                            max_out_degree(graph) + 1),
+                            constants.action_count + 1),
                            dtype=np.bool)
     else:
         visited = out
@@ -222,8 +264,8 @@ def returnable_set(graph, reverse_graph, initial_nodes, out=None):
                 other_data = graph.get_edge_data(prev_node, other_node)
                 if other_data['probability'] and \
                         data['action'] == other_data['action'] and \
-                        (not other_data['safe'] or reachable[other_node, 0]):
-                    safe_action = False
+                        (not reachable[other_node, 0]):
+                    semi_safe_action = False
             # if not yet visited and cannot lead to unsafe places, add to returnable states
             if not visited[prev_node, data['action']] and semi_safe_action:
                 visited[prev_node, data['action']] = True
@@ -235,11 +277,11 @@ def returnable_set(graph, reverse_graph, initial_nodes, out=None):
         # for each node to check for dead-endiness
         node = popped.pop(0)
         # see if it leads somewhere
-        leadsSomewhere = False
+        leads_somewhere = False
         for action in range(1,5):
             if visited[node, action]:
-                leadsSomewhere = True
-        if not leadsSomewhere:
+                leads_somewhere = True
+        if not leads_somewhere:
             # mark node as non-returnable
             visited[node, 0] = False
             # check all nodes leading here
@@ -252,6 +294,13 @@ def returnable_set(graph, reverse_graph, initial_nodes, out=None):
                     # and check if this previous node might be a dead end, if not defined as safe
                     if not prev_node in popped and not prev_node in initial_nodes:
                         popped.append(prev_node)
+
+    # plt.figure(7)
+    # plt.imshow(np.reshape(visited[:, 0], constants.world_shape).T,
+    #            origin='lower', interpolation='nearest', vmin=0, vmax=1)
+    # plt.title('returnable')
+    # plt.show(block=False)
+    # plt.pause(0.01)
 
     if out is None:
         return visited

@@ -15,3 +15,10 @@ beta = 2
 # Define world
 world_shape = (20, 20)
 step_size = (0.5, 0.5)
+
+#  choose world
+pylonWorld = True  # Use pylon world if true, otherwise use normal GP sampling
+offset = 20  # pylon world size
+scaling = 0.3  # scaling factor in z direction
+
+action_count = 4 # max number of distinct actions

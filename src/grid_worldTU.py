@@ -2,6 +2,7 @@
 
 import networkx as nx
 import numpy as np
+import examples.sampleConstants as constants
 from matplotlib import pyplot as plt
 from scipy.spatial.distance import cdist
 
@@ -213,22 +214,43 @@ def grid_world_graph(world_size):
     # action 1: go right
     graph.add_edges_from(zip(grid_nodes[:, :-1].reshape(-1),
                              grid_nodes[:, 1:].reshape(-1)),
-                         action=1, probability = 1.0)
+                         action=1, probability=1.0)
 
     # action 2: go down
     graph.add_edges_from(zip(grid_nodes[:-1, :].reshape(-1),
                              grid_nodes[1:, :].reshape(-1)),
-                         action=2, probability = 1.0)
+                         action=2, probability=1.0)
 
     # action 3: go left
-    graph.add_edges_from(zip(grid_nodes[:, 1:].reshape(-1),
-                             grid_nodes[:, :-1].reshape(-1)),
-                         action=3, probability = 1.0)
+    graph.add_edges_from(zip(grid_nodes[10:, 1:].reshape(-1),
+                             grid_nodes[10:, :-1].reshape(-1)),
+                         action=3, probability=1.0)
+    graph.add_edges_from(zip(grid_nodes[:10, 11:].reshape(-1),
+                             grid_nodes[:10, 10:-1].reshape(-1)),
+                         action=3, probability=1.0)
 
     # action 4: go up
-    graph.add_edges_from(zip(grid_nodes[1:, :].reshape(-1),
-                             grid_nodes[:-1, :].reshape(-1)),
-                         action=4, probability = 1.0)
+    # safe areas
+    graph.add_edges_from(zip(grid_nodes[11:20, :].reshape(-1),
+                             grid_nodes[10:19, :].reshape(-1)),
+                         action=4, probability=1.0)
+    graph.add_edges_from(zip(grid_nodes[1:11, 10:].reshape(-1),
+                             grid_nodes[0:10, 10:].reshape(-1)),
+                         action=4, probability=1.0)
+
+    # risky corner
+    graph.add_edges_from(zip(grid_nodes[2:11, :10].reshape(-1),
+                             grid_nodes[1:10, :10].reshape(-1)),
+                         action=4, probability=0.6)
+    graph.add_edges_from(zip(grid_nodes[1, :10].reshape(-1),
+                             grid_nodes[0, :10].reshape(-1)),
+                         action=4, probability=1.0)
+
+    # roll down hill to edge
+    for i in range(2, 11):
+        graph.add_edges_from(zip(grid_nodes[i, :10].reshape(-1),
+                                 grid_nodes[0, :10].reshape(-1)),
+                             action=4, probability=0.4)
 
     return graph
 
@@ -511,7 +533,7 @@ class GridWorldTU(SafeMDPTU):
                    origin='lower', interpolation='nearest', vmin=0, vmax=1)
         plt.title(title.format(action))
         plt.show(block=False)
-        plt.pause(0.2)
+        plt.pause(0.01)
 
     def plot_S(self, safe_set, action=0):
         """
@@ -675,9 +697,44 @@ def draw_gp_sample(kernel, world_shape, step_size):
     coord = grid(world_shape, step_size)
 
     # Draw a sample from GP
-    cov = kernel.K(coord) + np.eye(coord.shape[0]) * 1e-10
-    sample = np.random.multivariate_normal(np.zeros(coord.shape[0]), cov)
+    # Draw a sample from GP
+    if constants.pylonWorld:
+        sample = pylon_world(coord, kernel)
+    else:
+        cov = kernel.K(coord) + np.eye(coord.shape[0]) * 1e-10
+        sample = np.random.multivariate_normal(np.zeros(coord.shape[0]), cov)
+
     return sample, coord
+
+
+def pylon_world(coord, kernel):
+    """
+       Creates a pylon world with center of pylon at (0,0)
+
+       Parameters
+       ----------
+       kernel: GPy kernel
+           Defines the GP we draw a sample from (though it should not do anything here
+       world_shape: tuple
+           Shape of the grid we use for sampling
+       coord: coordinates array
+           for defining the world area
+       """
+    cov = kernel.K(coord) * 0  # used for creating a 2 by 2 matrix coveraince matrix, so we get the same array shape
+    sample = np.random.multivariate_normal(np.zeros(coord.shape[0]), cov)
+    # Change ndarray to another world
+    constants.offset = 20
+    constants.scaling = 0.3
+    for x in range(0, 20):
+        for y in range(0, 20):
+            sample[x + y * constants.offset] = np.exp(constants.scaling * (-np.sqrt(x * x + y * y) + 10))
+
+    # Subtract average value so that average value is close to zero
+    avg = np.average(sample)
+    for x in range(0, 20):
+        for y in range(0, 20):
+            sample[x + y * constants.offset] = sample[x + y * constants.offset] - avg
+    return sample
 
 
 def shortest_path(source, next_sample, G):
