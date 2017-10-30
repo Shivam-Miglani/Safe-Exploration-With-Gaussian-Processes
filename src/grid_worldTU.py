@@ -214,22 +214,43 @@ def grid_world_graph(world_size):
     # action 1: go right
     graph.add_edges_from(zip(grid_nodes[:, :-1].reshape(-1),
                              grid_nodes[:, 1:].reshape(-1)),
-                         action=1)
+                         action=1, probability=1.0)
 
     # action 2: go down
     graph.add_edges_from(zip(grid_nodes[:-1, :].reshape(-1),
                              grid_nodes[1:, :].reshape(-1)),
-                         action=2)
+                         action=2, probability=1.0)
 
     # action 3: go left
-    graph.add_edges_from(zip(grid_nodes[:, 1:].reshape(-1),
-                             grid_nodes[:, :-1].reshape(-1)),
-                         action=3)
+    graph.add_edges_from(zip(grid_nodes[10:, 1:].reshape(-1),
+                             grid_nodes[10:, :-1].reshape(-1)),
+                         action=3, probability=1.0)
+    graph.add_edges_from(zip(grid_nodes[:10, 11:].reshape(-1),
+                             grid_nodes[:10, 10:-1].reshape(-1)),
+                         action=3, probability=1.0)
 
     # action 4: go up
-    graph.add_edges_from(zip(grid_nodes[1:, :].reshape(-1),
-                             grid_nodes[:-1, :].reshape(-1)),
-                         action=4)
+    # safe areas
+    graph.add_edges_from(zip(grid_nodes[11:20, :].reshape(-1),
+                             grid_nodes[10:19, :].reshape(-1)),
+                         action=4, probability=1.0)
+    graph.add_edges_from(zip(grid_nodes[1:11, 10:].reshape(-1),
+                             grid_nodes[0:10, 10:].reshape(-1)),
+                         action=4, probability=1.0)
+
+    # risky corner
+    graph.add_edges_from(zip(grid_nodes[2:11, :10].reshape(-1),
+                             grid_nodes[1:10, :10].reshape(-1)),
+                         action=4, probability=0.6)
+    graph.add_edges_from(zip(grid_nodes[1, :10].reshape(-1),
+                             grid_nodes[0, :10].reshape(-1)),
+                         action=4, probability=1.0)
+
+    # roll down hill to edge
+    for i in range(2, 11):
+        graph.add_edges_from(zip(grid_nodes[i, :10].reshape(-1),
+                                 grid_nodes[0, :10].reshape(-1)),
+                             action=4, probability=0.4)
 
     return graph
 
@@ -512,7 +533,7 @@ class GridWorldTU(SafeMDPTU):
                    origin='lower', interpolation='nearest', vmin=0, vmax=1)
         plt.title(title.format(action))
         plt.show(block=False)
-        plt.pause(0.2)
+        plt.pause(0.01)
 
     def plot_S(self, safe_set, action=0):
         """
