@@ -56,7 +56,7 @@ x.gp.set_XY(x.gp.X[n_samples:, :], x.gp.Y[n_samples:])
 
 t = time.time()
 x.plot_S_iteration(x.S_hat)
-for i in range(100):
+for i in range(50):
     x.update_sets()
     next_sample = x.target_sample()
     x.add_observation(*next_sample)
@@ -74,8 +74,11 @@ true_S = compute_true_safe_set(x.world_shape, x.altitudes, x.h)
 true_S_hat = compute_true_S_hat(x.graph, true_S, x.initial_nodes)
 
 # Plot safe sets
-x.plot_S(x.S_hat)
 x.plot_S(true_S_hat)
+x.plot_S(true_S_hat, 1)
+x.plot_S(true_S_hat, 2)
+x.plot_S(true_S_hat, 3)
+x.plot_S(true_S_hat, 4)
 
 # Classification performance
 print(np.sum(np.logical_and(true_S_hat, np.logical_not(

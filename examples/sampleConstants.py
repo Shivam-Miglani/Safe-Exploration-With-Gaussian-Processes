@@ -16,3 +16,9 @@ beta = 2
 world_shape = (10, 10)
 step_size = (1.0, 1.0)
 num_iterations = 100
+
+
+#  choose world
+pylonWorld = True  # Use pylon world if true, otherwise use normal GP sampling
+offset = 20  # pylon world size
+scaling = 0.3  # scaling factor in z direction

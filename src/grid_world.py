@@ -1,5 +1,6 @@
 import networkx as nx
 import numpy as np
+import examples.sampleConstants as constants
 from matplotlib import pyplot as plt
 from scipy.spatial.distance import cdist
 
@@ -653,9 +654,43 @@ def draw_gp_sample(kernel, world_shape, step_size):
     coord = grid(world_shape, step_size)
 
     # Draw a sample from GP
-    cov = kernel.K(coord) + np.eye(coord.shape[0]) * 1e-10
-    sample = np.random.multivariate_normal(np.zeros(coord.shape[0]), cov)
+    if constants.pylonWorld:
+        sample = pylon_world(coord, kernel)
+    else:
+        cov = kernel.K(coord) + np.eye(coord.shape[0]) * 1e-10
+        sample = np.random.multivariate_normal(np.zeros(coord.shape[0]), cov)
+
     return sample, coord
+
+
+def pylon_world(coord, kernel):
+    """
+       Creates a pylon world with center of pylon at (0,0)
+
+       Parameters
+       ----------
+       kernel: GPy kernel
+           Defines the GP we draw a sample from (though it should not do anything here
+       world_shape: tuple
+           Shape of the grid we use for sampling
+       coord: coordinates array
+           for defining the world area
+       """
+    cov = kernel.K(coord) * 0  # used for creating a 2 by 2 matrix coveraince matrix, so we get the same array shape
+    sample = np.random.multivariate_normal(np.zeros(coord.shape[0]), cov)
+    # Change ndarray to another world
+    constants.offset = 20
+    constants.scaling = 0.3
+    for x in range(0, 20):
+        for y in range(0, 20):
+            sample[x + y * constants.offset] = np.exp(constants.scaling * (-np.sqrt(x * x + y * y) + 10))
+
+    # Subtract average value so that average value is close to zero
+    avg = np.average(sample)
+    for x in range(0, 20):
+        for y in range(0, 20):
+            sample[x + y * constants.offset] = sample[x + y * constants.offset] - avg
+    return sample
 
 
 def shortest_path(source, next_sample, G):
