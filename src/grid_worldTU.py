@@ -207,22 +207,71 @@ def grid_world_graph(world_size):
     graph.add_edges_from(zip(grid_nodes[:, :-1].reshape(-1), grid_nodes[:, 1:].reshape(-1)), action=1)
 
     # action 2: go down
-    graph.add_edges_from(zip(grid_nodes[:-1, :].reshape(-1),
-                             grid_nodes[1:, :].reshape(-1)),
-                         action=2)
+    graph.add_edges_from(zip(grid_nodes[:-1, :].reshape(-1), grid_nodes[1:, :].reshape(-1)), action=2)
 
     # action 3: go left
-    graph.add_edges_from(zip(grid_nodes[:, 1:].reshape(-1),
-                             grid_nodes[:, :-1].reshape(-1)),
-                         action=3)
+    graph.add_edges_from(zip(grid_nodes[:, 1:].reshape(-1),grid_nodes[:, :-1].reshape(-1)), action=3)
 
     # action 4: go up
-    graph.add_edges_from(zip(grid_nodes[1:, :].reshape(-1),
-                             grid_nodes[:-1, :].reshape(-1)),
-                         action=4)
+    graph.add_edges_from(zip(grid_nodes[1:, :].reshape(-1), grid_nodes[:-1, :].reshape(-1)), action=4)
 
     return graph
 
+
+def grid_world_graph_pylon(world_size):
+    """Create a graph that represents a grid world.
+
+    In the grid world there are four actions, (1, 2, 3, 4), which correspond
+    to going (up, right, down, left) in the x-y plane. The states are
+    ordered so that `np.arange(np.prod(world_size)).reshape(world_size)`
+    corresponds to a matrix where increasing the row index corresponds to the
+    x direction in the graph, and increasing y index corresponds to the y
+    direction.
+
+    Parameters
+    ----------
+    world_size: tuple
+        The size of the grid world (rows, columns)
+
+    Returns
+    -------
+    graph: nx.DiGraph()
+        The directed graph representing the grid world.
+    """
+    nodes = np.arange(np.prod(world_size))
+    grid_nodes = nodes.reshape(world_size)
+
+    graph = nx.DiGraph()
+
+
+    # action 1: go right
+    graph.add_edges_from(zip(grid_nodes[:, :-1].reshape(-1), grid_nodes[:, 1:].reshape(-1)), action=1)
+
+    # action 2: go down
+    graph.add_edges_from(zip(grid_nodes[:-1, :].reshape(-1), grid_nodes[1:, :].reshape(-1)), action=2)
+
+    # action 3: go left
+    graph.add_edges_from(zip(grid_nodes[:, 1:].reshape(-1), grid_nodes[:, :-1].reshape(-1)), action=3)
+
+    # action 4: go up
+    graph.add_edges_from(zip(grid_nodes[1:, :].reshape(-1), grid_nodes[:-1, :].reshape(-1)), action=4)
+
+
+
+    for u,v,data in graph.edges_iter(zip(grid_nodes[0:9,0:9].reshape(-1)),data=True):
+        action = data['action']
+        if action==1:
+            data['probability'] = 0.1
+        if action==2:
+            data['probability'] = 0.1
+        if action==3:
+            data['probability'] = 0.7
+        if action==4:
+            data['probability'] = 0.1
+
+
+
+    return graph
 
 def compute_true_S_hat(graph, safe_set, initial_nodes, reverse_graph=None):
     """
@@ -694,14 +743,14 @@ def pylon_world(coord, kernel):
     # Change ndarray to another world
     constants.offset = 20
     constants.scaling = 0.3
-    for x in range(0, 20):
-        for y in range(0, 20):
+    for x in range(0, constants.world_shape[0]):
+        for y in range(0, constants.world_shape[1]):
             sample[x + y * constants.offset] = np.exp(constants.scaling * (-np.sqrt(x * x + y * y) + 10))
 
     # Subtract average value so that average value is close to zero
     avg = np.average(sample)
-    for x in range(0, 20):
-        for y in range(0, 20):
+    for x in range(0, constants.world_shape[0]):
+        for y in range(0, constants.world_shape[1]):
             sample[x + y * constants.offset] = sample[x + y * constants.offset] - avg
     return sample
 

@@ -13,8 +13,8 @@ L = 0
 beta = 2
 
 # Define world
-world_shape = (10, 10)
-step_size = (1.0, 1.0)
+world_shape = (20, 20)
+step_size = (0.5, 0.5)
 num_iterations = 100
 
 
